@@ -6,23 +6,42 @@ queueonteleport([[
     if workspace:GetAttribute("Weather") ~= readfile("DYZS_GameConfig_Weather.txt") then
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Dyzh-Dve/Dyzs-GetScript/refs/heads/main/1"))()
 
-        local response = request({
-            Url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100",
-            Method = "GET"
-        })
+        local success = false
+        local maxRetry = 5
 
-        if response.Success and response.StatusCode == 200 then
-            local res = game:GetService("HttpService"):JSONDecode(response.Body)
+        for attempt = 1, maxRetry do
+            local response = request({
+                Url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100",
+                Method = "GET"
+            })
 
-            for _, server in pairs(res.data) do
-                if server.playing < server.maxPlayers and server.id ~= game.JobId then
-                    task.wait(2.5)
-                    game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, server.id)
-                    break
+            if not response then
+                task.wait(5)
+            elseif response.StatusCode == 429 then
+                local retryAfter = tonumber(
+                    response.Headers and (response.Headers["retry-after"] or response.Headers["Retry-After"])
+                ) or 10
+                task.wait(retryAfter)
+            elseif response.Success and response.StatusCode == 200 then
+                local ok, res = pcall(function()
+                    return game:GetService("HttpService"):JSONDecode(response.Body)
+                end)
+
+                if ok and res and res.data then
+                    for _, server in pairs(res.data) do
+                        if server.playing < server.maxPlayers and server.id ~= game.JobId then
+                            task.wait(2.5)
+                            game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, server.id)
+                            success = true
+                            break
+                        end
+                    end
                 end
+
+                if success then break end
+            else
+                task.wait(5)
             end
-        else
-            warn("请求失败，状态码：", response.StatusCode)
         end
     end
 ]])
