@@ -3,7 +3,7 @@ queueonteleport(([[
     task.wait()
   until game:IsLoaded()
   if not workspace:GetAttribute("Weather") == "Thunderstorm" then
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Dyzh-Dve/Dyzh/refs/heads/main/1"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Dyzh-Dve/Dyzs-GetScript/refs/heads/main/1?token=GHSAT0AAAAAAEGWBIF5OCRSRYFDGAUHGNBY2WLH6FQ"))()
     local res = game:GetService('HttpService'):JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. game.PlaceId .. '/servers/Public?sortOrder=Asc&limit=100'))
     for _, server in pairs(res.data) do
       if server.playing < server.maxPlayers and server.id ~= game.JobId then
