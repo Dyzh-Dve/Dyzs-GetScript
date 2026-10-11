@@ -16,6 +16,7 @@ queueonteleport([[
 
             for _, server in pairs(res.data) do
                 if server.playing < server.maxPlayers and server.id ~= game.JobId then
+                    task.wait(2.5)
                     game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, server.id)
                     break
                 end
